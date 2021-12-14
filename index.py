@@ -1,3 +1,4 @@
+from os import name
 from tkinter import ttk
 from tkinter import *
 
@@ -9,7 +10,7 @@ class Product:
 
     def __init__(self, window):
         self.wind=window
-        self.wind.title('Hola Mundo')
+        self.wind.title('Register Product')
 
         #creatin a frame container
         frame=LabelFrame(self.wind, text= 'Register a new Predutc')
@@ -38,8 +39,8 @@ class Product:
         self.tree.heading('#1',text='Price',anchor=CENTER)
         
         #Buttons
-        ttk.Button(text='DELETE').grid(row=5,column=0,sticky=W+E)
-        ttk.Button(text='EDIT').grid(row=5,column=1,sticky=W+E) 
+        ttk.Button(text='DELETE',command= self.delete_product).grid(row=5,column=0,sticky=W+E)
+        ttk.Button(text='EDIT',command=self.edit_product).grid(row=5,column=1,sticky=W+E) 
 
         #Filling the Row
         self.get_product()
@@ -76,12 +77,13 @@ class Product:
         else:
             self.message['text']='Name and Price are required'
         self.get_product()
+    
     def delete_product(self):
         self.message['text']=''
         try:
             self.tree.item(self.tree.selection())['text'][0]
         except IndexError as e:
-            self.message['text']='Pleas Seect a Recor'
+            self.message['text']='Please Select a Record'
             return
         self.message['text']=''
         name=self.tree.item(self.tree.selection())['text']
@@ -89,7 +91,41 @@ class Product:
         self.run_query(query,(name, ))
         self.message['text']='Record {} deleted successfully'.format(name)
         self.get_product()
-
+    def edit_product(self):
+        self.message['text']=''
+        try:
+            self.tree.item(self.tree.selection())['text'][0]
+        except IndexError as e:
+            self.message['text']='Please Select a Record'
+            return
+        old_name=self.tree.item(self.tree.selection())['text']
+        old_price=self.tree.item(self.tree.selection())['values'][0]
+        self.edit_wind=Toplevel()
+        self.edit_wind.title='Edit Product'
+        #old_name
+        Label(self.edit_wind,text=('Old Name: ')).grid(row=0,column=1)
+        Entry(self.edit_wind,textvariable=StringVar(self.edit_wind,value=old_name),state='readonly').grid(row=0,column=2)
+        #New name
+        Label(self.edit_wind,text=('New Name: ')).grid(row=1,column=1)
+        new_name=Entry(self.edit_wind)
+        new_name.grid(row=1,column=2)
+        #old_Price
+        Label(self.edit_wind,text=('Old Price: ')).grid(row=2,column=1)
+        Entry(self.edit_wind,textvariable=StringVar(self.edit_wind,value=old_price),state='readonly').grid(row=2,column=2)
+        #New Price
+        Label(self.edit_wind,text=('New Price: ')).grid(row=3,column=1)
+        new_price=Entry(self.edit_wind)
+        new_price.grid(row=3,column=2)
+        #Button
+        Button(self.edit_wind,text='Update',command=lambda: self.edit_records(new_name.get(),new_price.get(),old_name,old_price)).grid(row=4,column=2,sticky=W+E)
+    
+    def edit_records(self,new_name,new_price,old_name,old_price):
+        query='UPDATE Product SET Name = ?, Price = ? WHERE Name = ? AND Price = ?'
+        parameters=(new_name,new_price,old_name,old_price)
+        self.run_query(query,parameters)
+        self.edit_wind.destroy()
+        self.message['text']='Record {} updated successfully'.format(old_name)
+        self.get_product()
 
 
 
