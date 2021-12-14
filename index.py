@@ -36,7 +36,12 @@ class Product:
         self.tree.grid(row=4,column=0,columnspan=2)
         self.tree.heading('#0',text='Name',anchor=CENTER)
         self.tree.heading('#1',text='Price',anchor=CENTER)
+        
+        #Buttons
+        ttk.Button(text='DELETE').grid(row=5,column=0,sticky=W+E)
+        ttk.Button(text='EDIT').grid(row=5,column=1,sticky=W+E) 
 
+        #Filling the Row
         self.get_product()
     
     def run_query(self,query,parameters=()):
@@ -70,6 +75,19 @@ class Product:
             self.price.delete(0,END)
         else:
             self.message['text']='Name and Price are required'
+        self.get_product()
+    def delete_product(self):
+        self.message['text']=''
+        try:
+            self.tree.item(self.tree.selection())['text'][0]
+        except IndexError as e:
+            self.message['text']='Pleas Seect a Recor'
+            return
+        self.message['text']=''
+        name=self.tree.item(self.tree.selection())['text']
+        query='DELETE FROM Product WHERE Name = ?'
+        self.run_query(query,(name, ))
+        self.message['text']='Record {} deleted successfully'.format(name)
         self.get_product()
 
 
